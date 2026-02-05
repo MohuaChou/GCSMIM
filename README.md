@@ -1,4 +1,4 @@
-# GCSMIM (3D) — MAE-style sparse masked pretraining + 3D segmentation finetune
+# When Grouped Cyclic Shift meets Masked Image Modeling: Effective Pre-training for Data-scarce 3D Ultrasound Analysis Tasks
 
 This repo implements a 3D medical imaging pipeline inspired by:
 - **HySparK**: Hybrid Sparse Masking for Large Scale Medical Image Pre-Training (MICCAI 2024).  
@@ -14,30 +14,50 @@ We support:
 ## 1. Directory Structure
 
 ```
-scripts/
-  pretrain.py     # pretraining entry
-  finetune.py     # finetune entry
-  test.py         # evaluation/testing entry
-
-engine/
-  pretrain.py     # pretraining train loop
-  finetune.py     # finetune train loop + evaluate()
-
-models/
-  __init__.py     # build_sparse_encoder(...)
-  encoder.py
-  decoder.py
-  gcsmim.py       # pretrain wrapper (sparse encode + densify + decode + loss)
-  network/
-    gcsmim_model.py  # segmentation network + build_gcsmim(...)
-
-utils/
-  misc.py
-  datasets.py
-  lr_sched.py
-  loss.py          # HybridSegLoss + DiceLoss3D (kept)
+GCSMIM/
+|---- pretrain.py                     # pretraining entry
+|---- finetune.py                     # finetune entry
+|---- test.py                         # evaluation/testing entry
+|
+|---- engine/
+|     |---- __init__.py               # (optional) make engine a package
+|     |---- pretrain.py               # pretraining train loop
+|     |---- finetune.py               # finetune train loop + evaluate()
+|
+|---- models/
+|     |---- __init__.py               # build_sparse_encoder(...)
+|     |---- encoder.py
+|     |---- decoder.py
+|     |---- gcsmim.py                 # pretrain wrapper (sparse encode + densify + decode + loss)
+|     |
+|     |---- network/
+|           |---- __init__.py         # (optional) make network a package
+|           |---- gcsmim_model.py     # segmentation network + build_gcsmim(...)
+|
+|---- utils/
+|     |---- __init__.py               # (optional) make utils a package
+|     |---- misc.py
+|     |---- datasets.py
+|     |---- lr_sched.py
+|     |---- loss.py                   # HybridSegLoss + DiceLoss3D (kept)
+|
+|---- data_root/
+|     |---- dataset.json
+|     |
+|     |---- imagesTr/
+|     |     |---- case_0001.nii.gz
+|     |     |---- case_0002.nii.gz
+|     |
+|     |---- labelsTr/
+|     |     |---- case_0001.nii.gz
+|     |     |---- case_0002.nii.gz
+|     |
+|     |---- imagesTs/
+|     |     |---- case_1001.nii.gz
+|     |
+|     |---- labelsTs/
+|           |---- case_1001.nii.gz
 ```
-
 ---
 
 ## 2. Environment
@@ -56,22 +76,6 @@ pip install monai nibabel numpy tqdm timm tensorboard
 
 ### 3.1 Dataset Root Layout
 Your `data_dir` must contain a `dataset.json` and the corresponding files (NIfTI `.nii` / `.nii.gz` or other MONAI-supported formats).
-
-Example:
-```
-data_root/
-  dataset.json
-  imagesTr/
-    case_0001.nii.gz
-    case_0002.nii.gz
-  labelsTr/
-    case_0001.nii.gz
-    case_0002.nii.gz
-  imagesTs/
-    case_1001.nii.gz
-  labelsTs/
-    case_1001.nii.gz
-```
 
 ### 3.2 dataset.json schema (required)
 We use three splits: `pretrain`, `finetune`, `test`.
