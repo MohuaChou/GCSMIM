@@ -16,7 +16,6 @@ GCSMIM/
 |---- test.py                         # evaluation/testing entry
 |
 |---- engine/
-|     |---- __init__.py               # (optional) make engine a package
 |     |---- pretrain.py               # pretraining train loop
 |     |---- finetune.py               # finetune train loop + evaluate()
 |
