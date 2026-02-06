@@ -1,9 +1,5 @@
 # When Grouped Cyclic Shift meets Masked Image Modeling: Effective Pre-training for Data-scarce 3D Ultrasound Analysis Tasks
 
-This repo implements a 3D medical imaging pipeline inspired by:
-- **HySparK**: Hybrid Sparse Masking for Large Scale Medical Image Pre-Training (MICCAI 2024).  
-- **MAE**: Masked Autoencoders Are Scalable Vision Learners (He et al., 2021).
-
 We support:
 - **Pretraining** (MIM): sparse encoder + densify + lightweight decoder, reconstruct masked voxels
 - **Finetuning** (segmentation): supervised 3D segmentation using pretrained weights (optional)
@@ -108,12 +104,12 @@ Example `dataset.json`:
 
 ### 4.1 Pretrain (masked reconstruction)
 ```bash
-python -m scripts.pretrain   --data_path  /path/to/data_root   --output_dir /path/to/output/pretrain   --input_size 96   --batch_size 1   --epochs 5   --mask_ratio 0.75   --device cuda
+python pretrain   --data_path  /path/to/data_root   --output_dir /path/to/output/pretrain   --input_size 96   --batch_size 1   --epochs 5   --mask_ratio 0.75   --device cuda
 ```
 
 ### 4.2 Finetune (segmentation)
 ```bash
-python -m scripts.finetune   --data_path  /path/to/data_root   --output_dir /path/to/output/finetune   --input_size 96   --num_classes 3   --batch_size 1   --epochs 5   --device cuda   --loss_type hybrid   --pretrained_ckpt /path/to/output/pretrain/checkpoint-pretrain-best.pth
+python finetune   --data_path  /path/to/data_root   --output_dir /path/to/output/finetune   --input_size 96   --num_classes 3   --batch_size 1   --epochs 5   --device cuda   --loss_type hybrid   --pretrained_ckpt /path/to/output/pretrain/checkpoint-pretrain-best.pth
 ```
 
 Notes:
@@ -121,7 +117,7 @@ Notes:
 
 ### 4.3 Test / Inference (sliding window)
 ```bash
-python -m scripts.test   --data_path /path/to/data_root   --ckpt /path/to/output/finetune/checkpoint-ft-best.pth   --num_classes 3   --roi_size 96 96 96   --sw_batch_size 2   --overlap 0.25   --device cuda   --output_dir /path/to/output/test
+python test   --data_path /path/to/data_root   --ckpt /path/to/output/finetune/checkpoint-ft-best.pth   --num_classes 3   --roi_size 96 96 96   --sw_batch_size 2   --overlap 0.25   --device cuda   --output_dir /path/to/output/test
 ```
 
 ---
