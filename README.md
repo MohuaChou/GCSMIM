@@ -136,19 +136,10 @@ Recommended in dev: delete cache directory when transforms change.
 If you use this repo, please cite:
 
 ```bibtex
-@inproceedings{tang2024hyspark,
-  title={Hyspark: Hybrid sparse masking for large scale medical image pre-training},
-  author={Tang, Fenghe and Xu, Ronghao and Yao, Qingsong and Fu, Xueming and Quan, Quan and Zhu, Heqin and Liu, Zaiyi and Zhou, S. Kevin},
-  booktitle={International Conference on Medical Image Computing and Computer-Assisted Intervention},
-  pages={330--340},
-  year={2024},
-  organization={Springer}
-}
-
-@Article{MaskedAutoencoders2021,
-  author  = {Kaiming He and Xinlei Chen and Saining Xie and Yanghao Li and Piotr Doll{'a}r and Ross Girshick},
-  journal = {arXiv:2111.06377},
-  title   = {Masked Autoencoders Are Scalable Vision Learners},
-  year    = {2021}
+@article{zhou2025gcsmim,
+  title={When Grouped Cyclic Shift Meets Masked Image Modeling: Effective Pre-training for Data-scarce 3D Ultrasound Analysis Tasks},
+  author={Zhou, Rui and Li, Yingtai and Liang, Tianzhu and Xiao, Chang and Wu, Chenxu and Wang, Teng and Yu, Junxiong and Lin, Muqing and Zhou, Shaohua Kevin},
+  journal={Under review},
+  year={2025}
 }
 ```
