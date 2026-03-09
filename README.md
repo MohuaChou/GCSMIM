@@ -140,6 +140,6 @@ If you use this repo, please cite:
   title={When Grouped Cyclic Shift Meets Masked Image Modeling: Effective Pre-training for Data-scarce 3D Ultrasound Analysis Tasks},
   author={Rui Zhou and Yingtai Li and Tianzhu Liang and Chang Xiao and Chenxu Wu and Teng Wang and Junxiong Yu and Muqing Lin and Shaohua Kevin Zhou},
   journal={Under review},
-  year={2025}
+  year={2026}
 }
 ```
