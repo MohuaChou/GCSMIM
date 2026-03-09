@@ -138,7 +138,7 @@ If you use this repo, please cite:
 ```bibtex
 @article{zhou2025gcsmim,
   title={When Grouped Cyclic Shift Meets Masked Image Modeling: Effective Pre-training for Data-scarce 3D Ultrasound Analysis Tasks},
-  author={Zhou, Rui and Li, Yingtai and Liang, Tianzhu and Xiao, Chang and Wu, Chenxu and Wang, Teng and Yu, Junxiong and Lin, Muqing and Zhou, Shaohua Kevin},
+  author={Rui Zhou and Yingtai Li and Tianzhu Liang and Chang Xiao and Chenxu Wu and Teng Wang and Junxiong Yu and Muqing Lin and Shaohua Kevin Zhou},
   journal={Under review},
   year={2025}
 }
