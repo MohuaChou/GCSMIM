@@ -35,7 +35,6 @@ def get_args():
     parser.add_argument("--seed", default=0, type=int)
     parser.add_argument("--device", default="cuda", type=str)
 
-    # AMP: default ON, allow turning off
     parser.add_argument("--no_amp", action="store_true", help="Disable AMP (default: enabled)")
     parser.add_argument("--print_freq", default=50, type=int)
 
@@ -61,7 +60,7 @@ def get_args():
                         help="Auto-resume from latest checkpoint in output_dir")
     parser.set_defaults(auto_resume=True)
 
-    # Optional: init from pretrain ckpt (encoder only)
+    # Optional
     parser.add_argument("--pretrained_ckpt", default="", type=str,
                         help="Path to pretrain checkpoint; will load encoder weights (prefix: sparse_encoder.)")
 
