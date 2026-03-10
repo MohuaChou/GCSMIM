@@ -64,7 +64,6 @@ class Light_Decoder(nn.Module):
         super().__init__()
         self.width = width
 
-        # determine depth
         if isinstance(up_sample_ratio, (list, tuple)):
             for r in up_sample_ratio:
                 assert is_pow2n(r)
