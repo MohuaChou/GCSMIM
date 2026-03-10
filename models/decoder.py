@@ -52,7 +52,7 @@ class FusionBlock(nn.Module):
 class Light_Decoder(nn.Module):
     """
     Decoder used in sparse MIM:
-    - input: `to_dec` list of dense feature maps (small -> large)
+    - input: `to_dec` list of dense feature maps
     - output: ONE reconstruction volume at the final stage only (B, 1, D, H, W)
     """
     def __init__(
@@ -75,23 +75,17 @@ class Light_Decoder(nn.Module):
             assert is_pow2n(up_sample_ratio)
             n = round(math.log2(up_sample_ratio))
 
-        # width halving rule (same spirit as your original)
         channels = [self.width // (2 ** i) for i in range(n + 1)]
         bn3d = nn.BatchNorm3d
 
         self.dec = nn.ModuleList([UNetUpBlock(cin, cout, bn3d) for cin, cout in zip(channels[:-1], channels[1:])])
         self.fuse = nn.ModuleList([FusionBlock(cin * 2, cin, bn3d) for cin, _ in zip(channels[:-1], channels[1:])])
 
-        # only ONE output head at the end
         self.out = nn.Conv3d(channels[-1], 1, kernel_size=1, stride=1, bias=True)
 
         self.initialize()
 
     def forward(self, to_dec: List[torch.Tensor]) -> torch.Tensor:
-        """
-        to_dec: list of feature maps from smallest to largest.
-               Each element shape: (B, C, D, H, W) and C matches current decoder width.
-        """
         x = 0
         for i, up in enumerate(self.dec):
             if i < len(to_dec) and to_dec[i] is not None:
