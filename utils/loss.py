@@ -12,7 +12,7 @@ class HybridSegLoss(nn.Module):
         self.weights = weights
 
     def forward(self, preds, targets):
-        # targets: accept [B,1,D,H,W] or [B,D,H,W]
+        # targets: [B,1,D,H,W] or [B,D,H,W]
         if targets.ndim == 5 and targets.size(1) == 1:
             targets_ce = targets.squeeze(1)
         else:
