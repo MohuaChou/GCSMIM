@@ -218,7 +218,6 @@ class Trainer:
         if not misc.is_main_process():
             return
 
-        # best always saved; non-best saved every 10 epochs + last
         if (not best) and not (epoch % 10 == 0 or epoch + 1 == self.args.epochs):
             return
 
