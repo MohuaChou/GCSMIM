@@ -323,7 +323,7 @@ class GCSMixer(nn.Module):
         x_cat = self.path2_fc_d(x_cat.permute(0, 2, 3, 4, 1).contiguous().reshape(B, N, C))
         x_2 = self.drop(x_cat)
 
-        # ===================== Fusion & Output (unchanged) =====================
+        # ===================== Fusion =====================
         x_1 = torch.add(x_1, x)
         x_2 = torch.add(x_2, x)
 
