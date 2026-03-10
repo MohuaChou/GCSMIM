@@ -55,7 +55,6 @@ def train_one_epoch(
     for data_iter_step, batch in enumerate(metric_logger.log_every(data_loader, print_freq, header)):
         start = time.time()
 
-        # per-iteration lr scheduler
         if data_iter_step % accum_iter == 0:
             lr_sched.lr_wd_annealing(
                 optimizer,
@@ -70,7 +69,7 @@ def train_one_epoch(
         images = _extract_images_from_batch(batch).to(device, non_blocking=True)  # [B,C,D,H,W]
 
         with torch.cuda.amp.autocast():
-            loss = model(images)  # GCSMIM returns scalar loss
+            loss = model(images)
 
         loss_value = float(loss.item())
 
@@ -97,7 +96,6 @@ def train_one_epoch(
         lr = optimizer.param_groups[0]["lr"]
         metric_logger.update(lr=lr)
 
-        # distributed reduce for logging
         loss_value_reduce = misc.all_reduce_mean(loss_value)
 
         if log_writer is not None and (data_iter_step + 1) % accum_iter == 0:
