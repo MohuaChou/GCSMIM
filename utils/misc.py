@@ -1,5 +1,3 @@
-# 文件名: misc.py
-
 import builtins
 import datetime
 import os
