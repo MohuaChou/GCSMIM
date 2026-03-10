@@ -54,22 +54,18 @@ class GCSMIM(nn.Module):
         self.densify_projs = nn.ModuleList()
         self.mask_tokens = nn.ParameterList()
 
-        # build densify modules
         e_widths = list(self.sparse_encoder.enc_feat_map_chs)
         d_width = self.dense_decoder.width
 
         for i in range(self.hierarchy):
             e_width = e_widths.pop()
 
-            # mask token at this scale
             p = nn.Parameter(torch.zeros(1, e_width, 1, 1, 1))
             trunc_normal_(p, mean=0, std=.02, a=-.02, b=.02)
             self.mask_tokens.append(p)
 
-            # densify norm
             self.densify_norms.append(nn.Identity())
 
-            # densify projection
             if i == 0 and e_width == d_width:
                 densify_proj = nn.Identity()
             else:
@@ -83,7 +79,6 @@ class GCSMIM(nn.Module):
                 )
             self.densify_projs.append(densify_proj)
 
-            # decoder width halving rule
             d_width //= 2
 
     def mask(self, B: int, device, generator=None) -> torch.BoolTensor:
@@ -94,7 +89,6 @@ class GCSMIM(nn.Module):
             .scatter_(dim=1, index=idx, value=True).view(B, 1, d, h, w)
 
     def forward(self, inp_bcdhw: torch.Tensor, active_b1fff: Optional[torch.Tensor] = None, vis: bool = False):
-        # ---------------- Mask ----------------
         if active_b1fff is None:
             active_b1fff = self.mask(inp_bcdhw.shape[0], inp_bcdhw.device)  # (B,1,f,f,f)
 
@@ -109,11 +103,9 @@ class GCSMIM(nn.Module):
 
         masked_bcdhw = inp_bcdhw * active_masks[-1]
 
-        # ---------------- Sparse Encode ----------------
         fea_bcfffs: List[torch.Tensor] = self.sparse_encoder(masked_bcdhw, active_masks)
-        fea_bcfffs.reverse()  # smallest -> largest for densify
+        fea_bcfffs.reverse()
 
-        # ---------------- Densify ----------------
         cur_active = active_b1fff
         to_dec = []
         for i, bcfff in enumerate(fea_bcfffs):
@@ -126,17 +118,12 @@ class GCSMIM(nn.Module):
             bcfff = self.densify_projs[i](bcfff)
             to_dec.append(bcfff)
 
-            # upsample mask for next stage
             cur_active = cur_active.repeat_interleave(2, dim=2)\
                                    .repeat_interleave(2, dim=3)\
                                    .repeat_interleave(2, dim=4)
 
-        # ---------------- Decode ----------------
         rec_b1dhw = self.dense_decoder(to_dec)  # (B,1,D,H,W)
 
-        # ---------------- Loss ----------------
-        # Use active_b1fff to compute loss on masked tokens only.
-        # Patchify both rec and inp at deepest scale.
         reg = self.patchify_top(rec_b1dhw)
         inp = self.patchify_top(inp_bcdhw)
         
@@ -156,16 +143,11 @@ class GCSMIM(nn.Module):
         if not vis:
             return total_loss
 
-        # ---------------- Visualization ----------------
         rec_unpa = self.unpatchify_top(reg * var + mean)
         rec_or_inp = torch.where(active_masks[-1], inp_bcdhw, rec_unpa)
         return inp_bcdhw, masked_bcdhw, rec_or_inp, rec_unpa
 
-
     def patchify_top(self, bcdhw: torch.Tensor) -> torch.Tensor:
-        """
-        Output: (B, N, patch_dim)
-        """
         p = self.downsample_ratio[-1]
         d, h, w = self.fmap_d, self.fmap_h, self.fmap_w
         B, C = bcdhw.shape[:2]
@@ -176,15 +158,11 @@ class GCSMIM(nn.Module):
         return bln
 
     def unpatchify_top(self, bln: torch.Tensor) -> torch.Tensor:
-        """
-        Input: (B, N, C*p^3) where C is 1 in your reconstruction.
-        Output: (B, 1, D, H, W)
-        """
         p = self.downsample_ratio[-1]
         d, h, w = self.fmap_d, self.fmap_h, self.fmap_w
 
         B = bln.shape[0]
-        C = 1  # reconstruction is single-channel
+        C = 1
 
         x = bln.reshape(B, d, h, w, p, p, p, C)
         x = torch.einsum('bdhwpqrc->bcdphqwr', x)
