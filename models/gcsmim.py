@@ -94,7 +94,7 @@ class GCSMIM(nn.Module):
             .scatter_(dim=1, index=idx, value=True).view(B, 1, d, h, w)
 
     def forward(self, inp_bcdhw: torch.Tensor, active_b1fff: Optional[torch.Tensor] = None, vis: bool = False):
-        # ---------------- step1. Mask ----------------
+        # ---------------- Mask ----------------
         if active_b1fff is None:
             active_b1fff = self.mask(inp_bcdhw.shape[0], inp_bcdhw.device)  # (B,1,f,f,f)
 
@@ -109,11 +109,11 @@ class GCSMIM(nn.Module):
 
         masked_bcdhw = inp_bcdhw * active_masks[-1]
 
-        # ---------------- step2. Sparse Encode ----------------
+        # ---------------- Sparse Encode ----------------
         fea_bcfffs: List[torch.Tensor] = self.sparse_encoder(masked_bcdhw, active_masks)
         fea_bcfffs.reverse()  # smallest -> largest for densify
 
-        # ---------------- step3. Densify ----------------
+        # ---------------- Densify ----------------
         cur_active = active_b1fff
         to_dec = []
         for i, bcfff in enumerate(fea_bcfffs):
@@ -131,16 +131,15 @@ class GCSMIM(nn.Module):
                                    .repeat_interleave(2, dim=3)\
                                    .repeat_interleave(2, dim=4)
 
-        # ---------------- step4. Decode ----------------
-        rec_b1dhw = self.dense_decoder(to_dec)  # (B,1,D,H,W) reconstructed volume
+        # ---------------- Decode ----------------
+        rec_b1dhw = self.dense_decoder(to_dec)  # (B,1,D,H,W)
 
-        # ---------------- step5. Loss ----------------
-        # Use deepest token mask (active_b1fff) to compute loss on masked tokens only.
+        # ---------------- Loss ----------------
+        # Use active_b1fff to compute loss on masked tokens only.
         # Patchify both rec and inp at deepest scale.
         reg = self.patchify_top(rec_b1dhw)
         inp = self.patchify_top(inp_bcdhw)
-
-        # normalize target (same as your code)
+        
         if inp.size(-1) == 1:
             mean = inp.mean(dim=1, keepdim=True)
             var = (inp.var(dim=1, keepdim=True) + 1e-6) ** 0.5
@@ -165,7 +164,6 @@ class GCSMIM(nn.Module):
 
     def patchify_top(self, bcdhw: torch.Tensor) -> torch.Tensor:
         """
-        Patchify at the deepest scale only.
         Output: (B, N, patch_dim)
         """
         p = self.downsample_ratio[-1]
@@ -179,7 +177,6 @@ class GCSMIM(nn.Module):
 
     def unpatchify_top(self, bln: torch.Tensor) -> torch.Tensor:
         """
-        Unpatchify at the deepest scale only.
         Input: (B, N, C*p^3) where C is 1 in your reconstruction.
         Output: (B, 1, D, H, W)
         """
