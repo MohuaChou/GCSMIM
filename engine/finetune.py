@@ -136,11 +136,10 @@ def evaluate(
             logits = inferer(images, model)
             loss = criterion(logits, labels)
 
-        # logits: [B, C, D, H, W]
+        # [B, C, D, H, W]
         pred = torch.argmax(logits, dim=1)  # [B, D, H, W]
         pred_oh = F.one_hot(pred, num_classes=num_classes).permute(0, 4, 1, 2, 3).float()
 
-        # labels expected as [B, 1, D, H, W] with class indices
         gt = labels.squeeze(1).long()
         gt_oh = F.one_hot(gt, num_classes=num_classes).permute(0, 4, 1, 2, 3).float()
 
