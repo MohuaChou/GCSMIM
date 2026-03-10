@@ -90,11 +90,6 @@ class SparseInstanceNorm3d(nn.InstanceNorm1d):
 
 
 class SparseLinear(nn.Linear):
-    """
-    Sparse token-wise Linear:
-    - if sparse_mode=False: normal Linear on all tokens
-    - if sparse_mode=True: only apply Linear on active tokens determined by `_cur_active`
-    """
     def __init__(self, in_features, out_features, sparse=False):
         super().__init__(in_features, out_features)
         self.sparse_mode = sparse
@@ -121,9 +116,6 @@ class SparseBatchNorm3dSP(nn.BatchNorm3d):
 
 
 class SparseConvNeXtLayerNorm(nn.LayerNorm):
-    """
-    LayerNorm supporting channels_last and channels_first, and sparse token LN.
-    """
     def __init__(self, normalized_shape, eps=1e-6, data_format="channels_last", sparse=True):
         if data_format not in ["channels_last", "channels_first"]:
             raise NotImplementedError
@@ -162,7 +154,7 @@ class SparseConvNeXtLayerNorm(nn.LayerNorm):
                 x = self.weight[:, None, None, None] * x + self.bias[:, None, None, None]
                 return x
 
-        # 3D tokens: (B, N, C) or (B, C)
+        # (B, N, C) or (B, C)
         if self.sparse:
             B, N, _ = x.shape
             D = H = W = int(round(N ** (1 / 3)))
