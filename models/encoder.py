@@ -197,7 +197,7 @@ class SparseConvNeXtBlock(nn.Module):
         x = self.pwconv2(x)
         if self.gamma is not None:
             x = self.gamma * x
-        x = x.permute(0, 4, 1, 2, 3)  # back to (B,C,D,H,W)
+        x = x.permute(0, 4, 1, 2, 3)  # (B,C,D,H,W)
 
         if self.sparse:
             x *= _get_active_ex_or_ii(D=x.shape[2], H=x.shape[3], W=x.shape[4], returning_active_ex=True)
