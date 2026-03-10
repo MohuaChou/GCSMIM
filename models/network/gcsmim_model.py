@@ -225,17 +225,16 @@ class GCSMixer(nn.Module):
         self.dim = in_features
         self.sparse = sparse
 
-        # ---- Path-1 (Forward GCS): D -> H -> W ----
+        # ---- D -> H -> W ----
         self.path1_fc_d = SparseLinear(in_features, hidden_features, sparse=sparse)
         self.path1_fc_h = SparseLinear(in_features, hidden_features, sparse=sparse)
         self.path1_fc_w = SparseLinear(in_features, hidden_features, sparse=sparse)
 
-        # ---- Path-2 (Reverse GCS): W -> H -> D ----
+        # ---- W -> H -> D ----
         self.path2_fc_w = SparseLinear(in_features, hidden_features, sparse=sparse)
         self.path2_fc_h = SparseLinear(in_features, hidden_features, sparse=sparse)
         self.path2_fc_d = SparseLinear(in_features, hidden_features, sparse=sparse)
 
-        # ---- Fusion + Output projection ----
         self.fusion_fc = SparseLinear(in_features * 2, hidden_features, sparse=sparse)
         self.out_fc = SparseLinear(in_features * 2, out_features, sparse=sparse)
 
@@ -267,7 +266,7 @@ class GCSMixer(nn.Module):
             m_h_rev = GroupedCyclicShift3D.apply_shift(m_w_rev, height_shifts, axis=3, reverse=True, D=D, H=H, W=W)
             m_d_rev = GroupedCyclicShift3D.apply_shift(m_h_rev, depth_shifts, axis=2, reverse=True, D=D, H=H, W=W)
 
-        # ===================== Path 1: Forward GCS (D -> H -> W) =====================
+        # ===================== D -> H -> W =====================
         x_cat = GroupedCyclicShift3D.apply_shift(xn, depth_shifts, axis=2, reverse=False, D=D, H=H, W=W)
         if self.sparse:
             x_cat = MGFR.restore(x_cat, original_x, m_d_fwd)
@@ -294,7 +293,7 @@ class GCSMixer(nn.Module):
         x_cat = self.path1_fc_w(x_cat.permute(0, 2, 3, 4, 1).contiguous().reshape(B, N, C))
         x_1 = self.drop(x_cat)
 
-        # ===================== Path 2: Reverse GCS (W -> H -> D) =====================
+        # ===================== W -> H -> D =====================
         xn = x.view(B, D, H, W, C).permute(0, 4, 1, 2, 3).contiguous()
 
         x_cat = GroupedCyclicShift3D.apply_shift(xn, width_shifts, axis=4, reverse=True, D=D, H=H, W=W)
@@ -323,7 +322,6 @@ class GCSMixer(nn.Module):
         x_cat = self.path2_fc_d(x_cat.permute(0, 2, 3, 4, 1).contiguous().reshape(B, N, C))
         x_2 = self.drop(x_cat)
 
-        # ===================== Fusion =====================
         x_1 = torch.add(x_1, x)
         x_2 = torch.add(x_2, x)
 
